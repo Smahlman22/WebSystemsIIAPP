@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Deleted Artworks</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #fff;
+      margin: 0;
+      padding: 0;
+    }
+
+    .navbar {
+      background-color: #333;
+      overflow: hidden;
+      position: fixed;
+      top: 0;
+      width: 100%;
+      z-index: 1000;
+    }
+
+    .navbar a, .navbar .profile {
+      float: left;
+      display: block;
+      color: white;
+      text-align: center;
+      padding: 14px 20px;
+      text-decoration: none;
+      font-size: 17px;
+      cursor: pointer;
+    }
+
+    .navbar a:hover, .navbar .profile:hover {
+      background-color: #ddd;
+      color: black;
+    }
+
+    .profile-dropdown {
+      display: none;
+      position: absolute;
+      top: 50px;
+      right: 20px;
+      background-color: #333;
+      box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2);
+      border-radius: 4px;
+    }
+
+    .profile-dropdown button {
+      background-color: #333;
+      color: white;
+      border: none;
+      padding: 10px;
+      width: 100%;
+      text-align: left;
+      cursor: pointer;
+    }
+
+    .content {
+      max-width: 1200px;
+      margin: 80px auto 20px;
+      padding: 0 20px;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 30px;
+      color: #333;
+    }
+
+    .art-gallery {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 20px;
+    }
+
+    .art-card {
+      background-color: #ffe6e6;
+      border: 1px solid #f5c2c2;
+      width: 300px;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 2px 2px 6px rgba(0,0,0,0.1);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .art-card img {
+      width: 100%;
+      height: 200px;
+      object-fit: cover;
+    }
+
+    .art-card-content {
+      padding: 15px;
+      flex-grow: 1;
+    }
+
+    .art-card-content h2 {
+      margin-bottom: 10px;
+      font-size: 20px;
+      color: #222;
+    }
+
+    .art-card-content p {
+      margin: 5px 0;
+      color: #555;
+      font-size: 14px;
+    }
+
+    .art-card-content button {
+      background-color: #28a745;
+      color: white;
+      border: none;
+      padding: 8px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      margin-top: 10px;
+    }
+
+    .art-card-content button:hover {
+      opacity: 0.9;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navbar -->
+  <div class="navbar" id="navbar">
+    <a href="home.html">Home</a>
+    <a href="about.html">About</a>
+    <a href="signup.html" id="signupLink">Sign Up</a>
+    <a href="login.html" id="loginLink">Log In</a>
+    <a href="gallery.html">Gallery</a>
+    <a href="upload.html">Upload Art</a>
+    <a href="deleted.html">Deleted Art</a>
+  </div>
+
+  <div class="profile-dropdown" id="profileDropdown">
+    <button onclick="logout()">Log Out</button>
+  </div>
+
+  <div class="content">
+    <h1>Deleted Artworks</h1>
+    <div class="art-gallery" id="deleted-gallery"></div>
+  </div>
+
+  <script>
+    const userID = localStorage.getItem('userID');
+    const isAdmin = localStorage.getItem('isAdmin') === 'true';
+
+    function updateNavbar() {
+      const firstName = localStorage.getItem('firstName');
+      const lastName = localStorage.getItem('lastName');
+      const signupLink = document.getElementById('signupLink');
+      const loginLink = document.getElementById('loginLink');
+
+      if (firstName && lastName) {
+        signupLink.style.display = 'none';
+        loginLink.style.display = 'none';
+
+        const initials = firstName[0].toUpperCase() + lastName[0].toUpperCase();
+        const navbar = document.getElementById('navbar');
+        const profileIcon = document.createElement('div');
+        profileIcon.className = 'profile';
+        profileIcon.textContent = initials;
+        profileIcon.onclick = () => {
+          const dropdown = document.getElementById('profileDropdown');
+          dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+        };
+        navbar.appendChild(profileIcon);
+      }
+    }
+
+    function logout() {
+      localStorage.clear();
+      window.location.href = 'home.html';
+    }
+
+    async function restoreArt(id) {
+      const response = await fetch(`/artpieces/restore/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userID, isAdmin })
+      });
+      const result = await response.json();
+      alert(result.message);
+      loadDeletedGallery();
+    }
+
+    async function loadDeletedGallery() {
+      if (!isAdmin) {
+        alert("Access denied. Admins only.");
+        window.location.href = "home.html";
+        return;
+      }
+
+      try {
+        const response = await fetch(`/artpieces/deleted?isAdmin=true`);
+        const artPieces = await response.json();
+        const gallery = document.getElementById('deleted-gallery');
+        gallery.innerHTML = '';
+
+        artPieces.forEach(piece => {
+          const createdDate = new Date(piece.DateMade).toLocaleDateString();
+          const deletedDate = new Date(piece.DateAdded).toLocaleDateString();
+
+          const card = document.createElement('div');
+          card.classList.add('art-card');
+
+          card.innerHTML = `
+            <img src="/artpieces/image/${piece.ArtID}" alt="${piece.Name}">
+            <div class="art-card-content">
+              <h2>${piece.Name}</h2>
+              <p><strong>Description:</strong> ${piece.Description}</p>
+              <p><strong>Price:</strong> $${piece.Price}</p>
+              <p><strong>Date Created:</strong> ${createdDate}</p>
+              <p><strong>Date Deleted (Uploaded):</strong> ${deletedDate}</p>
+              <button onclick="restoreArt(${piece.ArtID})">Restore</button>
+            </div>
+          `;
+          gallery.appendChild(card);
+        });
+      } catch (err) {
+        console.error('❌ Failed to load deleted art:', err);
+        document.getElementById('deleted-gallery').innerText = 'Failed to load deleted artworks.';
+      }
+    }
+
+    updateNavbar();
+    window.onload = loadDeletedGallery;
+  </script>
+</body>
+</html>

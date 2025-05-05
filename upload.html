@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Upload Artwork</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f4f4f4;
+    }
+    .navbar {
+      background-color: #333;
+      overflow: hidden;
+      position: fixed;
+      top: 0;
+      width: 100%;
+      z-index: 1000;
+    }
+    .navbar a, .navbar .profile {
+      float: left;
+      display: block;
+      color: white;
+      text-align: center;
+      padding: 14px 20px;
+      text-decoration: none;
+      font-size: 17px;
+      cursor: pointer;
+    }
+    .navbar .profile {
+      float: right;
+    }
+    .navbar a:hover, .navbar .profile:hover {
+      background-color: #ddd;
+      color: black;
+    }
+    .profile-dropdown {
+      display: none;
+      position: absolute;
+      top: 50px;
+      right: 20px;
+      background-color: #333;
+      box-shadow: 0px 8px 16px rgba(0,0,0,0.2);
+      border-radius: 5px;
+      overflow: hidden;
+    }
+    .profile-dropdown button {
+      background-color: #333;
+      color: white;
+      border: none;
+      padding: 10px;
+      width: 100%;
+      text-align: left;
+      cursor: pointer;
+    }
+    .profile-dropdown button:hover {
+      background-color: #575757;
+    }
+    .content {
+      margin-top: 80px;
+      padding: 20px;
+    }
+    .form-container {
+      max-width: 600px;
+      margin: 80px auto;
+      background-color: #fff;
+      padding: 20px;
+      box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+      border-radius: 8px;
+    }
+    .form-container input,
+    .form-container textarea {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+    .form-container button {
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      cursor: pointer;
+      border-radius: 5px;
+    }
+    .form-container button:hover {
+      background-color: #45a049;
+    }
+    label {
+      font-size: 12px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="navbar" id="navbar">
+  <a href="home.html">Home</a>
+  <a href="about.html">About</a>
+  <a href="signup.html" id="signupLink">Sign Up</a>
+  <a href="login.html" id="loginLink">Log In</a>
+  <a href="gallery.html">Gallery</a>
+  <a href="upload.html">Upload Art</a>
+  <a href="deleted.html">Deleted Art</a>
+</div>
+
+<div class="profile-dropdown" id="profileDropdown">
+  <button onclick="logout()">Log Out</button>
+</div>
+
+<main>
+  <div class="form-container">
+    <h2>Upload Your Artwork</h2>
+    <form id="artwork-form" enctype="multipart/form-data">
+      <input type="file" id="art-image" name="art-image" required />
+      <input type="text" name="title" placeholder="Artwork Title" required />
+      <textarea name="description" placeholder="Artwork Description" required></textarea>
+      <input type="number" name="price" placeholder="Price ($)" required />
+      <label for="dateMade">Art Created:</label>
+      <input type="date" name="dateMade" required />
+      <label for="dateAdded">Art Uploaded:</label>
+      <input type="date" name="dateAdded" required />
+      <button type="submit">Upload</button>
+    </form>
+  </div>
+</main>
+
+<script>
+document.getElementById('artwork-form').addEventListener('submit', async function (e) {
+  e.preventDefault();
+
+  const form = document.getElementById('artwork-form');
+  const formData = new FormData(form);
+  const userID = localStorage.getItem('userID');
+
+  if (!userID) {
+    alert('You must be logged in to upload artwork.');
+    return;
+  }
+
+  formData.append('userID', userID);
+
+  try {
+    const response = await fetch('/artpieces', {
+      method: 'POST',
+      body: formData
+    });
+
+    const result = await response.json();
+    alert(result.message);
+    if (result.success) {
+      form.reset();
+    }
+  } catch (error) {
+    console.error('❌ Upload failed:', error);
+    alert('Upload failed. Please try again.');
+  }
+});
+
+function updateNavbar() {
+  const firstName = localStorage.getItem('firstName');
+  const lastName = localStorage.getItem('lastName');
+  const signupLink = document.getElementById('signupLink');
+  const loginLink = document.getElementById('loginLink');
+
+  if (firstName && lastName) {
+    signupLink.style.display = 'none';
+    loginLink.style.display = 'none';
+
+    const initials = firstName[0].toUpperCase() + lastName[0].toUpperCase();
+    const navbar = document.getElementById('navbar');
+    const profileIcon = document.createElement('div');
+    profileIcon.className = 'profile';
+    profileIcon.textContent = initials;
+    profileIcon.onclick = () => {
+      const dropdown = document.getElementById('profileDropdown');
+      dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+    };
+    navbar.appendChild(profileIcon);
+  }
+}
+
+function logout() {
+  localStorage.clear();
+  window.location.href = 'home.html';
+}
+
+updateNavbar();
+</script>
+
+</body>
+</html>

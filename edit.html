@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Edit Artwork</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f5f5f5;
+      margin: 0;
+      padding: 20px;
+    }
+
+    .form-container {
+      background-color: white;
+      padding: 20px;
+      border-radius: 8px;
+      max-width: 500px;
+      margin: 40px auto;
+      box-shadow: 2px 2px 10px rgba(0,0,0,0.1);
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 8px;
+      margin-top: 15px;
+    }
+
+    input, textarea, button {
+      width: 100%;
+      padding: 10px;
+      margin-top: 4px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+
+    button {
+      margin-top: 20px;
+      background-color: #5cb85c;
+      color: white;
+      border: none;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #4cae4c;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="form-container">
+    <h1>Edit Artwork</h1>
+    <form id="edit-form">
+      <label for="description">Description:</label>
+      <textarea id="description" required></textarea>
+
+      <label for="price">Price ($):</label>
+      <input type="number" id="price" step="0.01" required />
+
+      <label for="dateMade">Date Made:</label>
+      <input type="date" id="dateMade" required />
+
+      <label for="dateUploaded">Date Uploaded:</label>
+      <input type="date" id="dateUploaded" required />
+
+      <button type="submit">Save Changes</button>
+    </form>
+  </div>
+
+  <script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const artID = urlParams.get('artID');
+
+    async function loadArtPiece() {
+      try {
+        const response = await fetch(`/artpieces/${artID}`);
+        const art = await response.json();
+
+        document.getElementById('description').value = art.Description;
+        document.getElementById('price').value = art.Price;
+        document.getElementById('dateMade').value = new Date(art.DateMade).toISOString().split('T')[0];
+        document.getElementById('dateUploaded').value = new Date(art.DateAdded).toISOString().split('T')[0];
+
+      } catch (error) {
+        console.error('Error loading art:', error);
+        alert('Failed to load artwork.');
+      }
+    }
+
+    document.getElementById('edit-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const updatedData = {
+        description: document.getElementById('description').value,
+        price: parseFloat(document.getElementById('price').value),
+        dateMade: document.getElementById('dateMade').value,
+        dateAdded: document.getElementById('dateUploaded').value,
+      };
+
+      try {
+        const response = await fetch(`/artpieces/${artID}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(updatedData),
+        });
+
+        if (response.ok) {
+          alert('Artwork updated successfully!');
+          window.location.href = 'gallery.html'; // Go back to gallery after saving
+        } else {
+          alert('Failed to update artwork.');
+        }
+      } catch (error) {
+        console.error('Error updating art:', error);
+        alert('Server error updating artwork.');
+      }
+    });
+
+    loadArtPiece();
+  </script>
+
+</body>
+</html>
