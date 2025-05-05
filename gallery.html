@@ -185,7 +185,7 @@ async function loadGallery() {
       gallery.appendChild(card);
     });
   } catch (err) {
-    console.error('❌ Failed to load gallery:', err);
+    console.error('Failed to load gallery:', err);
     document.getElementById('gallery').innerText = 'Failed to load artwork.';
   }
 }
