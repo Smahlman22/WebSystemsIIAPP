@@ -12,7 +12,7 @@ const upload = multer(); // in-memory file storage
 // Azure SQL config
 const config = {
   user: 'stevenmahlman',
-  password: 'Lcshs12301!^',
+  password: '#############',
   server: 'websystems2db.database.windows.net',
   database: 'WebSystemsIIDataBase',
   options: {
