@@ -23,15 +23,15 @@ const config = {
 
 // Connect to SQL
 sql.connect(config)
-  .then(() => console.log('✅ Connected to Azure SQL Database!'))
-  .catch(err => console.error('❌ SQL connection error:', err));
+  .then(() => console.log(' Connected to Azure SQL Database!'))
+  .catch(err => console.error(' SQL connection error:', err));
 
 // Middleware
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-// 🔐 LOGIN ROUTE
+//  LOGIN ROUTE
 app.post('/login', async (req, res) => {
   const { username, password } = req.body;
 
@@ -62,7 +62,7 @@ app.post('/login', async (req, res) => {
       res.status(401).json({ success: false, message: 'Invalid username or password.' });
     }
   } catch (err) {
-    console.error('❌ Login error:', err);
+    console.error(' Login error:', err);
     res.status(500).json({ success: false, message: 'Server error. Please try again later.' });
   }
 });
@@ -87,12 +87,12 @@ app.post('/signup', async (req, res) => {
 
     res.json({ success: true, message: 'Account created successfully!' });
   } catch (err) {
-    console.error('❌ Sign-up error:', err);
+    console.error(' Sign-up error:', err);
     res.status(500).json({ success: false, message: 'Server error. Please try again later.' });
   }
 });
 
-// 🎨 UPLOAD ART PIECE
+//  UPLOAD ART PIECE
 app.post('/artpieces', upload.single('art-image'), async (req, res) => {
   const { title, description, price, dateMade, dateAdded, userID } = req.body;
   const imageBuffer = req.file?.buffer;
@@ -118,12 +118,12 @@ app.post('/artpieces', upload.single('art-image'), async (req, res) => {
 
     res.json({ success: true, message: 'Art uploaded successfully!' });
   } catch (err) {
-    console.error('❌ Art upload error:', err);
+    console.error(' Art upload error:', err);
     res.status(500).json({ success: false, message: 'Server error. Please try again.' });
   }
 });
 
-// 🖼️ FETCH IMAGE
+// FETCH IMAGE
 app.get('/artpieces/image/:id', async (req, res) => {
   try {
     const pool = await sql.connect(config);
@@ -137,12 +137,12 @@ app.get('/artpieces/image/:id', async (req, res) => {
     res.set('Content-Type', 'image/jpeg');
     res.send(image);
   } catch (err) {
-    console.error('❌ Image fetch error:', err);
+    console.error(' Image fetch error:', err);
     res.status(500).send('Server error');
   }
 });
 
-// 🎨 FETCH DELETED ART PIECES — ADMIN ONLY
+//  FETCH DELETED ART PIECES — ADMIN ONLY
 app.get('/artpieces/deleted', async (req, res) => {
   const isAdmin = req.query.isAdmin === 'true';
   if (!isAdmin) {
@@ -161,7 +161,7 @@ app.get('/artpieces/deleted', async (req, res) => {
 
     res.json(result.recordset);
   } catch (err) {
-    console.error('❌ Error fetching deleted artworks:', err);
+    console.error(' Error fetching deleted artworks:', err);
     res.status(500).send('Server error');
   }
 });
